@@ -40,6 +40,7 @@ set(dependencies
 
 ## Declare the pcl_ros_tf library
 add_library(pcl_ros_tf src/transforms.cpp)
+
 target_include_directories(pcl_ros_tf PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include/${PROJECT_NAME}>
@@ -180,6 +181,28 @@ rclcpp_components_register_node(pointcloud_to_pcd_lib
   PLUGIN "pcl_ros::PointCloudToPCD"
   EXECUTABLE pointcloud_to_pcd)
 
+
+# Add the new combined_pointcloud_to_pcd node as a library
+add_library(combined_pointcloud_to_pcd_lib SHARED tools/combined_pointcloud_to_pcd.cpp)
+
+# Link the necessary dependencies
+target_link_libraries(combined_pointcloud_to_pcd_lib ${PCL_LIBRARIES})
+target_include_directories(combined_pointcloud_to_pcd_lib PUBLIC
+  ${PCL_INCLUDE_DIRS})
+ament_target_dependencies(combined_pointcloud_to_pcd_lib
+  rclcpp
+  rclcpp_components
+  sensor_msgs
+  pcl_conversions
+  tf2_eigen
+  tf2_ros
+)
+# Register the component
+rclcpp_components_register_node(combined_pointcloud_to_pcd_lib
+  PLUGIN "pcl_ros::CombinedPointCloudToPCD"
+  EXECUTABLE combined_pointcloud_to_pcd_node
+)
+
 #
 #add_executable(pointcloud_to_pcd tools/pointcloud_to_pcd.cpp)
 #target_link_libraries(pointcloud_to_pcd ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
@@ -240,6 +263,7 @@ install(
 #    bag_to_pcd
 #    convert_pcd_to_image
 #    convert_pointcloud_to_image
+  combined_pointcloud_to_pcd_lib
   EXPORT export_pcl_ros
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib
